@@ -1,147 +1,109 @@
-Deep Learning Tasks: Tensor Manipulations, Loss Functions, and TensorBoard Logging
-
-Task 1: Tensor Manipulations & Reshaping
-
-Ojective:
-Perform tensor reshaping, transposing, broadcasting, and understand broadcasting in TensorFlow.
-
-Code:
-import tensorflow as tf
-
-# 1. Create a random tensor of shape (4, 6)
-tensor = tf.random.uniform(shape=(4, 6))
-print("Original Tensor:\n", tensor)
-
-# 2. Rank and shape
-rank = tf.rank(tensor)
-shape = tf.shape(tensor)
-print("\nRank:", rank.numpy())
-print("Shape:", shape.numpy())
-
-# 3. Reshape to (2, 3, 4) and transpose to (3, 2, 4)
-reshaped = tf.reshape(tensor, (2, 3, 4))
-transposed = tf.transpose(reshaped, perm=[1, 0, 2])
-print("\nReshaped Tensor (2, 3, 4):\n", reshaped)
-print("\nTransposed Tensor (3, 2, 4):\n", transposed)
-
-# 4. Broadcast a (1, 4) tensor
-small_tensor = tf.constant([[1.0, 2.0, 3.0, 4.0]])
-result = transposed + small_tensor
-print("\nResult after broadcasting:\n", result)
-
-Explanation:
-
-Broadcasting in TensorFlow automatically adjusts the shape of tensors during operations. A tensor of shape `(1, 4)` can be added to one with shape `(3, 2, 4)` by expanding it to `(3, 2, 4)` implicitly.
-
-Task 2: Loss Functions & Hyperparameter Tuning
+**Question 1: Tensor Manipulations & Reshaping**
 
 Objective:
 
-Compare Mean Squared Error (MSE) and Categorical Cross-Entropy (CCE) losses for different model predictions.
+To understand the fundamentals of tensor operations such as creating, reshaping, transposing, and broadcasting using TensorFlow.
 
-Code:
+Steps and Theoretical Explanation:
 
-import tensorflow as tf
-import matplotlib.pyplot as plt
-import numpy as np
+1. **Create a Random Tensor of Shape (4, 6)**
 
-# 1. Define true values and predictions
-y_true = tf.constant([[0, 0, 1]], dtype=tf.float32)
-y_pred_1 = tf.constant([[0.1, 0.1, 0.8]])
-y_pred_2 = tf.constant([[0.3, 0.4, 0.3]])
+   * A tensor is a multi-dimensional array. TensorFlow provides functions like `tf.random.uniform` to create random tensors.
+   * Shape `(4, 6)` means 4 rows and 6 columns, totaling 24 elements.
 
-# 2. Compute losses
-mse = tf.keras.losses.MeanSquaredError()
-cce = tf.keras.losses.CategoricalCrossentropy()
+2. **Find its Rank and Shape**
 
-mse_1 = mse(y_true, y_pred_1).numpy()
-cce_1 = cce(y_true, y_pred_1).numpy()
-mse_2 = mse(y_true, y_pred_2).numpy()
-cce_2 = cce(y_true, y_pred_2).numpy()
+   * **Rank** refers to the number of dimensions (e.g., a matrix has rank 2).
+   * **Shape** gives the size along each dimension, which can be obtained using `tf.shape()` and `tf.rank()`.
 
-print(f"Prediction 1 - MSE: {mse_1:.4f}, CCE: {cce_1:.4f}")
-print(f"Prediction 2 - MSE: {mse_2:.4f}, CCE: {cce_2:.4f}")
+3. **Reshape to (2, 3, 4)**
 
-# 3. Plotting
-labels = ['Prediction 1', 'Prediction 2']
-mse_values = [mse_1, mse_2]
-cce_values = [cce_1, cce_2]
+   * Reshaping rearranges data into a new shape without changing the underlying values.
+   * The new shape must have the same number of total elements: `2 × 3 × 4 = 24`.
 
-x = np.arange(len(labels))
-width = 0.35
+4. **Transpose to (3, 2, 4)**
 
-plt.bar(x - width/2, mse_values, width, label='MSE', color='skyblue')
-plt.bar(x + width/2, cce_values, width, label='CCE', color='salmon')
-plt.ylabel('Loss Value')
-plt.title('Loss Comparison')
-plt.xticks(x, labels)
-plt.legend()
-plt.grid(True, axis='y')
-plt.tight_layout()
-plt.show()
+   * Transposing reorders dimensions. Here, we change the order of axes using `tf.transpose(tensor, perm=[1, 0, 2])`.
 
-Output:
+5. **Broadcasting a Smaller Tensor (1, 4) and Adding**
 
-* Loss values printed in the console
-* A bar chart comparing MSE vs CCE for two prediction cases
+   * Broadcasting allows TensorFlow to automatically expand a tensor of lower rank to match another tensor’s shape during arithmetic operations.
+   * A tensor of shape `(1, 4)` can be added to a tensor of shape `(3, 2, 4)` because TensorFlow will replicate the smaller tensor across the missing dimensions.
 
+Expected Output:
 
-Task 3: Train a Neural Network and Log to TensorBoard
+* Print the original tensor's rank and shape.
+* Show new shapes after reshaping and transposing.
+* Show the result after broadcasting and addition.
+
+**Question 2: Loss Functions & Hyperparameter Tuning**
 
 Objective:
 
-* Train a simple neural network on the MNIST dataset and log metrics for TensorBoard visualization.
+To understand and compare loss functions and observe their sensitivity to prediction changes.
 
-Code:
+Steps and Theoretical Explanation:
 
-import tensorflow as tf
-import datetime
+1. **Define `y_true` and `y_pred`**
 
-# 1. Load and preprocess MNIST
-(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-x_train = x_train / 255.0
-x_test = x_test / 255.0
+   * These are true labels and model predictions.
+   * Typically, they are probability distributions for classification problems.
 
-# 2. Build model
-model = tf.keras.Sequential([
-    tf.keras.layers.Flatten(input_shape=(28, 28)),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(10, activation='softmax')
-])
+2. **Compute MSE and CCE**
 
-model.compile(optimizer='adam',
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+   * **Mean Squared Error (MSE):** Measures average of squared differences. Good for regression tasks.
+   * **Categorical Cross-Entropy (CCE):** Measures how far predicted probabilities are from true one-hot vectors. Ideal for classification.
 
-# 3. TensorBoard logging
-log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+3. **Modify Predictions and Observe Loss Changes**
 
-# Train model
-model.fit(x_train, y_train, epochs=5,
-          validation_data=(x_test, y_test),
-          callbacks=[tensorboard_cb])
-```
+   * Change `y_pred` slightly and observe how MSE and CCE respond.
+   * MSE responds linearly; CCE can grow sharply if the model becomes confident in the wrong prediction.
 
-Launch TensorBoard:
+4. **Plot the Loss Values Using Matplotlib**
 
+   * Create a bar chart to visualize the comparison between MSE and CCE for different predictions.
 
-4.1 Questions to answer
+Expected Output:
 
-1. What patterns do you observe in the training and validation accuracy curves?
+* Print the computed MSE and CCE values for different predictions.
+* Visualize them in a bar chart using Matplotlib.
 
-* Training accuracy usually improves with each epoch.
-* Validation accuracy may increase initially, then plateau or drop if overfitting occurs.
+**Question 3: Train a Neural Network and Log to TensorBoard**
+Objective:
 
-2. How can you use TensorBoard to detect overfitting?
+To train a neural network using the MNIST dataset and visualize metrics using TensorBoard.
 
-* If training accuracy keeps increasing but validation accuracy drops or stagnates, it indicates overfitting.
-* Similarly, validation loss rising while training loss drops is another sign.
+Steps and Theoretical Explanation:
 
-3. What happens when you increase the number of epochs?
+1. **Load and Preprocess the MNIST Dataset**
 
-* The model may start overfitting after a point.
-* Early improvements in accuracy may flatten out.
-* Validation performance may degrade if training continues excessively.
+   * MNIST consists of 28×28 grayscale images of handwritten digits (0–9).
+   * Data is normalized (pixel values scaled to \[0, 1]) for better model performance.
+
+2. **Train a Neural Network**
+
+   * A simple feed-forward neural network includes:
+
+     * `Flatten` layer to convert 2D image to 1D.
+     * `Dense` layer with ReLU activation.
+     * `Dropout` layer for regularization.
+     * Output layer with `softmax` for multi-class classification.
+   * Compile with `Adam` optimizer and train for 5 epochs.
+
+3. **Enable TensorBoard Logging**
+
+   * Use `tf.keras.callbacks.TensorBoard` to save training logs.
+   * Logs are written to `logs/fit/`, which can be visualized with TensorBoard.
+
+4. **Launch TensorBoard and Analyze Trends**
+
+   * Run `tensorboard --logdir=logs/fit` in terminal.
+   * Open `http://localhost:6006` in a browser.
+   * Observe training and validation curves.
+
+Expected Output:
+
+* Model trains for 5 epochs.
+* Logs are stored in `logs/fit/`.
+* Training and validation metrics (loss, accuracy) are visualized in TensorBoard.
 
